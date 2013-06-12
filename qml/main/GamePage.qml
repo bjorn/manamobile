@@ -87,6 +87,62 @@ Item {
     Keys.onReleased: handleKeyEvent(event, false);
     Keys.onPressed: handleKeyEvent(event, true);
 
+    Rectangle {
+        width: 200;
+        height: 200;
+        radius: 20;
+        opacity: 0.5;
+        anchors.horizontalCenter: parent.horizontalCenter;
+        anchors.bottom: parent.bottom;
+        anchors.bottomMargin: 100;
+
+        MouseArea {
+            id: joystick;
+            anchors.fill: parent;
+            onReleased: updateWalkDirection();
+
+            Item {
+                id: dot;
+                state: "idle";
+
+                Rectangle {
+                    width: 20;
+                    height: 20;
+                    radius: 10;
+                    anchors.centerIn: parent;
+                }
+
+                states: [
+                    State {
+                        name: "idle";
+                        AnchorChanges {
+                            target: dot;
+                            anchors.horizontalCenter: joystick.horizontalCenter;
+                            anchors.verticalCenter: joystick.verticalCenter;
+                        }
+                    },
+                    State {
+                        name: "pressed";
+                        when: joystick.pressed;
+                        PropertyChanges {
+                            target: dot;
+                            x: Math.max(0, Math.min(joystick.width, joystick.mouseX));
+                            y: Math.max(0, Math.min(joystick.height, joystick.mouseY));
+                        }
+                    }
+                ]
+            }
+
+            Binding {
+                when: joystick.pressed;
+                target: gameClient;
+                property: "playerWalkDirection";
+                value: Qt.point(joystick.mouseX - joystick.width / 2,
+                                joystick.mouseY - joystick.height / 2);
+            }
+        }
+    }
+
     NpcDialog {
         id: npcDialog;
         width: parent.width / 2;
